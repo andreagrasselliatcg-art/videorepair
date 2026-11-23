@@ -10,9 +10,15 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
+
+      - name: Scegli Xcode 16 (supporta macOS 11)
+        run: |
+          X=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -1 || true)
+          [ -n "$X" ] && sudo xcode-select -s "$X"
+          xcodebuild -version
 
       - name: Versione
         run: echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
