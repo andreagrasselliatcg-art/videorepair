@@ -22,7 +22,7 @@ ok_for_bigsur() {
 
 try_source() {
   local name="$1" url_ffmpeg="$2" url_ffprobe="$3"
-  echo "▶︎ Provo $name…"
+  echo "▶︎ Provo ${name}..."
   rm -rf "$TMP"/*
   mkdir -p "$TMP/a" "$TMP/b"
   curl -fsSL --retry 3 -o "$TMP/ffmpeg.zip"  "$url_ffmpeg"  || { echo "INFO: $name: download ffmpeg fallito"; return 1; }

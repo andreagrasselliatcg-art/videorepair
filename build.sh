@@ -13,7 +13,7 @@ rm -rf build
 mkdir -p build
 
 for ARCH in x86_64 arm64; do
-  echo "▶︎ Compilo per $ARCH…"
+  echo "▶︎ Compilo per ${ARCH}..."
   xcrun swiftc -O -swift-version 5 -parse-as-library \
     -target "${ARCH}-apple-macos${MIN_MACOS}" \
     -sdk "$SDK" \
