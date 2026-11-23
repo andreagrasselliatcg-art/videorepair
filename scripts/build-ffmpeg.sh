@@ -50,6 +50,7 @@ echo "== Verifica =="
 for b in ffmpeg ffprobe; do
   lipo -archs "$DEST/$b"
   otool -l "$DEST/$b" | grep -A4 LC_BUILD_VERSION | grep minos
-  otool -L "$DEST/$b" | grep -v -E '/usr/lib/|/System/Library/' | tail -n +2 && { echo "dipendenze non di sistema!"; exit 1; } || true
+  EXTRA="$(otool -L "$DEST/$b" | tail -n +2 | grep -v -E '/usr/lib/|/System/Library/' || true)"
+  if [ -n "$EXTRA" ]; then echo "dipendenze non di sistema: $EXTRA"; exit 1; fi
 done
 echo "OK"
