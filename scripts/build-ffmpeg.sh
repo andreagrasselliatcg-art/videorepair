@@ -40,7 +40,7 @@ cd "ffmpeg-${FFVER}"
   --disable-autodetect \
   --enable-gpl --enable-libx264 \
   --enable-videotoolbox --enable-audiotoolbox \
-  --enable-zlib --enable-bzlib --enable-iconv \
+  --enable-zlib --enable-bzlib \
   --enable-static --disable-shared \
   --disable-ffplay --disable-doc --disable-debug
 make -j"$JOBS"
