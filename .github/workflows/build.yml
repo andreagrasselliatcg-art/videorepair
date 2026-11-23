@@ -1,0 +1,50 @@
+name: Build VideoRepair installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versione
+        run: echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
+
+      - name: Scarica ffmpeg statico
+        run: bash scripts/fetch-ffmpeg.sh vendor/bin
+
+      - name: Compila app Universal
+        run: FFMPEG_DIR=vendor/bin bash build.sh
+
+      - name: Crea installer .pkg
+        run: bash scripts/make-pkg.sh
+
+      - name: Controlli
+        run: |
+          lipo -info build/VideoRepair.app/Contents/MacOS/VideoRepair
+          otool -l build/VideoRepair.app/Contents/MacOS/VideoRepair | grep -A4 LC_BUILD_VERSION | grep minos
+          pkgutil --payload-files "build/VideoRepair-$VERSION.pkg" | head -20
+          build/VideoRepair.app/Contents/Resources/bin/ffmpeg -hide_banner -version | head -1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: VideoRepair-${{ env.VERSION }}
+          path: build/VideoRepair-*.pkg
+
+      - name: Pubblica release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: VideoRepair ${{ env.VERSION }}
+          files: build/VideoRepair-*.pkg
+          body: |
+            Scarica **VideoRepair-${{ env.VERSION }}.pkg** e aprilo per installare.
+            Compatibile con macOS 11 Big Sur o successivo, Intel e Apple Silicon. ffmpeg incluso.
+            Se macOS dice "sviluppatore non identificato": tasto destro sul .pkg > Apri > Apri.
