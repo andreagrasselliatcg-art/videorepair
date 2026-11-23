@@ -24,13 +24,13 @@ jobs:
         run: echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
 
       - name: Scarica ffmpeg statico
-        run: bash scripts/fetch-ffmpeg.sh vendor/bin
+        run: bash scripts/ci-run.sh bash scripts/fetch-ffmpeg.sh vendor/bin
 
       - name: Compila app Universal
-        run: FFMPEG_DIR=vendor/bin bash build.sh
+        run: FFMPEG_DIR=vendor/bin bash scripts/ci-run.sh bash build.sh
 
       - name: Crea installer .pkg
-        run: bash scripts/make-pkg.sh
+        run: bash scripts/ci-run.sh bash scripts/make-pkg.sh
 
       - name: Controlli
         run: |
