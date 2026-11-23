@@ -31,7 +31,7 @@ Dopo ogni tentativo l'app controlla che il risultato si riproduca davvero.
 ## Compilare da soli (su un Mac con Xcode)
 
 ```bash
-bash scripts/fetch-ffmpeg.sh vendor/bin
+bash scripts/build-ffmpeg.sh vendor/bin
 FFMPEG_DIR=vendor/bin ./build.sh
 ./scripts/make-pkg.sh
 ```

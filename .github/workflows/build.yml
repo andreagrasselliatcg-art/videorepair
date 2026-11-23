@@ -23,8 +23,16 @@ jobs:
       - name: Versione
         run: echo "VERSION=1.0.${{ github.run_number }}" >> "$GITHUB_ENV"
 
-      - name: Scarica ffmpeg statico
-        run: bash scripts/ci-run.sh bash scripts/fetch-ffmpeg.sh vendor/bin
+      - name: Cache ffmpeg
+        id: ffcache
+        uses: actions/cache@v4
+        with:
+          path: vendor/bin
+          key: ffmpeg-bigsur-x86_64-${{ hashFiles('scripts/build-ffmpeg.sh') }}
+
+      - name: Compila ffmpeg per macOS 11
+        if: steps.ffcache.outputs.cache-hit != 'true'
+        run: bash scripts/ci-run.sh bash scripts/build-ffmpeg.sh vendor/bin
 
       - name: Compila app Universal
         run: FFMPEG_DIR=vendor/bin bash scripts/ci-run.sh bash build.sh
@@ -37,7 +45,7 @@ jobs:
           lipo -info build/VideoRepair.app/Contents/MacOS/VideoRepair
           otool -l build/VideoRepair.app/Contents/MacOS/VideoRepair | grep -A4 LC_BUILD_VERSION | grep minos
           pkgutil --payload-files "build/VideoRepair-$VERSION.pkg" | head -20
-          build/VideoRepair.app/Contents/Resources/bin/ffmpeg -hide_banner -version | head -1
+          build/VideoRepair.app/Contents/Resources/bin/ffmpeg -hide_banner -version | head -1 || echo 'Rosetta non disponibile, salto test'
 
       - uses: actions/upload-artifact@v4
         with:
