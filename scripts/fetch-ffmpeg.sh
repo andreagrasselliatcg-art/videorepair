@@ -15,7 +15,7 @@ minos() {
 
 ok_for_bigsur() {
   local m; m="$(minos "$1")"
-  echo "    $(basename "$1"): minos=$m, $(lipo -archs "$1")"
+  echo "::warning::$(basename "$1"): minos=$m archs=$(lipo -archs "$1" 2>&1)"
   [ -n "$m" ] && python3 -c "import sys;v=lambda s:tuple(map(int,s.split('.')));sys.exit(0 if v('$m')<=v('$MAX_MINOS') else 1)" \
     && lipo -archs "$1" | grep -q x86_64
 }
@@ -25,13 +25,14 @@ try_source() {
   echo "▶︎ Provo $name…"
   rm -rf "$TMP"/*
   mkdir -p "$TMP/a" "$TMP/b"
-  curl -fsSL --retry 3 -o "$TMP/ffmpeg.zip"  "$url_ffmpeg"  || return 1
-  curl -fsSL --retry 3 -o "$TMP/ffprobe.zip" "$url_ffprobe" || return 1
-  unzip -oq "$TMP/ffmpeg.zip"  -d "$TMP/a" && unzip -oq "$TMP/ffprobe.zip" -d "$TMP/b" || return 1
+  curl -fsSL --retry 3 -o "$TMP/ffmpeg.zip"  "$url_ffmpeg"  || { echo "::warning::$name: download ffmpeg fallito"; return 1; }
+  curl -fsSL --retry 3 -o "$TMP/ffprobe.zip" "$url_ffprobe" || { echo "::warning::$name: download ffprobe fallito"; return 1; }
+  echo "::warning::$name: $(file -b "$TMP/ffmpeg.zip" | head -c 80)"
+  unzip -oq "$TMP/ffmpeg.zip"  -d "$TMP/a" && unzip -oq "$TMP/ffprobe.zip" -d "$TMP/b" || { echo "::warning::$name: unzip fallito"; return 1; }
   local f p
   f="$(find "$TMP/a" -type f -name ffmpeg  | head -1)"
   p="$(find "$TMP/b" -type f -name ffprobe | head -1)"
-  [ -n "$f" ] && [ -n "$p" ] || return 1
+  [ -n "$f" ] && [ -n "$p" ] || { echo "::warning::$name: binari non trovati: $(find "$TMP" -type f | head -5 | tr '\n' ' ')"; return 1; }
   chmod +x "$f" "$p"
   ok_for_bigsur "$f" && ok_for_bigsur "$p" || { echo "    non compatibile con Big Sur"; return 1; }
   cp "$f" "$p" "$DEST/"
